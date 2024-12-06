@@ -25,8 +25,8 @@ class MyController(KesslerController):
          ship_thrust = ctrl.Consequent(np.arange(-480, 480, 1), 'ship_thrust')
 
          #Declare fuzzy sets for bullet_time (how long it takes for the bullet to reach the intercept point)
-         bullet_time['S'] = fuzz.trimf(bullet_time.universe,[0,0,0.02])
-         bullet_time['M'] = fuzz.trimf(bullet_time.universe, [0,0.02,0.1])
+         bullet_time['S'] = fuzz.trimf(bullet_time.universe,[0,0,0.025])
+         bullet_time['M'] = fuzz.trimf(bullet_time.universe, [0,0.025,0.1])
          bullet_time['L'] = fuzz.smf(bullet_time.universe,0.0,0.1)
 
          # Declare fuzzy sets for theta_delta (degrees of turn needed to reach the calculated firing angle)
