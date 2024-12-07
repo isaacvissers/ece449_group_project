@@ -23,6 +23,34 @@ class MyController(KesslerController):
          ship_turn = ctrl.Consequent(np.arange(-180,180,1), 'ship_turn') # Degrees due to Kessler
          ship_fire = ctrl.Consequent(np.arange(-1,1,0.1), 'ship_fire')
          ship_thrust = ctrl.Consequent(np.arange(-480, 480, 1), 'ship_thrust')
+         ship_position_x = ctrl.Antecedent(np.arange(-500, 500, 1), 'ship_pos_x')
+         ship_position_y = ctrl.Antecedent(np.arange(-400, 400, 1), 'ship_pos_y')
+         ship_heading = ctrl.Antecedent(np.arange(0, 360, 1), 'ship_heading')
+         ship_speed = ctrl.Antecedent(np.arange(-240, 240, 1), 'ship_speed')
+
+        # We only care if the position is near the edges
+         ship_position_x['NL'] = fuzz.trimf(ship_position_x.universe, [-500, -500, -400])
+         ship_position_x['N'] = fuzz.trimf(ship_position_x.universe, [-500, -0, 500])
+         ship_position_x['PL'] = fuzz.trimf(ship_position_x.universe, [400, 500, 500])
+
+         ship_position_y['NL'] = fuzz.trimf(ship_position_y.universe, [-400, -400, -300])
+         ship_position_y['N'] = fuzz.trimf(ship_position_y.universe, [-400, -0, 400])
+         ship_position_y['PL'] = fuzz.trimf(ship_position_y.universe, [300, 400, 400])
+
+         ship_heading['N'] = fuzz.trimf(ship_turn.universe, [30,90,150])
+         ship_heading['S'] = fuzz.trimf(ship_turn.universe, [210,270,330])
+         ship_heading['E1'] = fuzz.trimf(ship_heading.universe, [300, 360, 360])
+         ship_heading['E2'] = fuzz.trimf(ship_heading.universe, [0, 0, 60])
+         ship_heading['E'] = np.fmax(ship_heading['E1'].mf, ship_heading['E2'].mf)
+         ship_heading['W'] = fuzz.trimf(ship_turn.universe, [120,180,240])
+
+         ship_speed['NL'] = fuzz.trimf(ship_speed.universe, [-240, -240, -160])
+         ship_speed['NM'] = fuzz.trimf(ship_speed.universe, [-240, -160, -80])
+         ship_speed['NS'] = fuzz.trimf(ship_speed.universe, [-160, -80, 0])
+         # ship_speed['Z'] = fuzz.trimf(ship_speed.universe, [-60,0,60])
+         ship_speed['PS'] = fuzz.trimf(ship_speed.universe, [-0, 80, 160])
+         ship_speed['PM'] = fuzz.trimf(ship_speed.universe, [80, 160, 240])
+         ship_speed['PL'] = fuzz.trimf(ship_speed.universe, [160, 240, 240])
 
          #Declare fuzzy sets for bullet_time (how long it takes for the bullet to reach the intercept point)
          bullet_time['S'] = fuzz.trimf(bullet_time.universe,[0,0,0.025])
@@ -148,6 +176,7 @@ class MyController(KesslerController):
          # Find the closest asteroid (disregards asteroid velocity)
          ship_pos_x = ship_state["position"][0] # See src/kesslergame/ship.py in the KesslerGame Github
          ship_pos_y = ship_state["position"][1]
+         ship_velocity = ship_state["velocity"]
          closest_asteroid = None
 
          for a in game_state["asteroids"]:
@@ -174,6 +203,7 @@ class MyController(KesslerController):
 
          asteroid_ship_x = ship_pos_x - closest_asteroid["aster"]["position"][0]
          asteroid_ship_y = ship_pos_y - closest_asteroid["aster"]["position"][1]
+         print(ship_state['heading'])
 
          asteroid_ship_theta = math.atan2(asteroid_ship_y,asteroid_ship_x)
 
@@ -221,6 +251,9 @@ class MyController(KesslerController):
 
          shooting.input['bullet_time'] = bullet_t
          shooting.input['theta_delta'] = shooting_theta
+         # shooting.input['ship_velocity'] = ship_velocity
+         # shooting.input['ship_pos_x'] = ship_pos_x
+         # shooting.input['ship_pos_y'] = ship_pos_y
 
          shooting.compute()
 
@@ -240,7 +273,7 @@ class MyController(KesslerController):
          self.eval_frames +=1
 
          #DEBUG
-         print(thrust, bullet_t, shooting_theta, turn_rate, fire)
+         # print(thrust, bullet_t, shooting_theta, turn_rate, fire)
 
          return thrust, turn_rate, fire, drop_mine
      @property
