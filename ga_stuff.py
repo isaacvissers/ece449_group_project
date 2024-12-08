@@ -1,3 +1,4 @@
+import json
 from random import randint, random
 import time
 from kesslergame import Scenario, KesslerGame, GraphicsType, TrainerEnvironment
@@ -19,9 +20,10 @@ def create_chromosome():
     bullet_time = [random() * 0.1, random() * 0.1]
     thrust = [randint(0, 260) for _ in range(6)]
 
-    return [pos_x, pos_y, heading, speed, bullet_time, thrust]
+    return [pos_x, pos_y, heading] + speed + bullet_time + thrust
 
-def fitness(chromosome):
+def fitness(ga, solution, index):
+    chromosome = solution
     my_test_scenario = Scenario(name='Test Scenario',
                                 num_asteroids=5,
                                 ship_states=[
@@ -36,8 +38,8 @@ def fitness(chromosome):
                      'graphics_type': GraphicsType.Tkinter,
                      'realtime_multiplier': 1,
                      'graphics_obj': None}
-    # game = KesslerGame(settings=game_settings)  # Use this to visualize the game scenario
-    game = TrainerEnvironment(settings=game_settings) # Use this for max-speed, no-graphics simulation
+    game = KesslerGame(settings=game_settings)  # Use this to visualize the game scenario
+    # game = TrainerEnvironment(settings=game_settings) # Use this for max-speed, no-graphics simulation
     pre = time.perf_counter()
     score, perf_data = game.run(scenario=my_test_scenario, controllers=[MyControllerGA(chromosome), ])
     print('Scenario eval time: ' + str(time.perf_counter() - pre))
@@ -65,7 +67,8 @@ ga_instance = pygad.GA(
     parent_selection_type="rank",
     crossover_type="single_point",
     mutation_type="random",
-    mutation_percent_genes=20
+    mutation_percent_genes=20,
+    parallel_processing=['thread', 5]
 )
 
 ga_instance.run()
@@ -74,6 +77,7 @@ ga_instance.run()
 best_solution, best_solution_fitness, _ = ga_instance.best_solution()
 print(f"Best solution: {best_solution}")
 print(f"Fitness of the best solution: {best_solution_fitness}")
-
+with open("best_results", "w") as file:
+    json.dump(best_solution, file)
 # Plot the fitness progress
 ga_instance.plot_fitness()
