@@ -2,16 +2,16 @@
 # NOTICE: This file is subject to the license agreement defined in file 'LICENSE', which is part of
 # this source code package.
 import time
-from kesslergame import Scenario, KesslerGame, GraphicsType
+from kesslergame import Scenario, KesslerGame, GraphicsType, TrainerEnvironment
+
+from my_controler_ga import MyControllerGA
 from test_controller import TestController
-from scott_dick_controller import ScottDickController
-from my_controller import MyController
 from graphics_both import GraphicsBoth
 my_test_scenario = Scenario(name='Test Scenario',
  num_asteroids=5,
 ship_states=[
  {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1},
- {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2},
+ # {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2},
  ],
 map_size=(1000, 800),
  time_limit=60,
@@ -24,7 +24,7 @@ game_settings = {'perf_tracker': True,
 game = KesslerGame(settings=game_settings) # Use this to visualize the game scenario
 # game = TrainerEnvironment(settings=game_settings) # Use this for max-speed, no-graphics simulation
 pre = time.perf_counter()
-score, perf_data = game.run(scenario=my_test_scenario, controllers = [TestController(), MyController()])
+score, perf_data = game.run(scenario=my_test_scenario, controllers = [MyControllerGA(), ])
 print('Scenario eval time: '+str(time.perf_counter()-pre))
 print(score.stop_reason)
 print('Asteroids hit: ' + str([team.asteroids_hit for team in score.teams]))
