@@ -117,13 +117,10 @@ def mutate(chromosome, ga):
                 chromosome[i] = randint(45, 90)
             elif 3 <= i < 8:  # Sorted `speed`
                 chromosome[i] = randint(0, 220)
-                chromosome[3:8] = sorted(chromosome[3:8])
             elif 8 <= i < 10:  # Sorted `bullet_time`
                 chromosome[i] = random() * 0.1
-                chromosome[8:10] = sorted(chromosome[8:10])
             elif i >= 10:  # Sorted `thrust`
                 chromosome[i] = randint(0, 260)
-                chromosome[10:] = sorted(chromosome[10:])
 
     # Re-sort sorted sections
     chromosome[3:8] = sorted(chromosome[3:8])  # speed
