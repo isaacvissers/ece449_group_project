@@ -11,9 +11,9 @@ from scott_dick_controller import ScottDickController
 from my_controller import MyController
 from graphics_both import GraphicsBoth
 my_test_scenario = Scenario(name='Test Scenario',
- num_asteroids=5,
+ num_asteroids=20,
 ship_states=[
- {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1},
+ {'position': (400, 400), 'angle': 90, 'lives': 3, 'team': 1, 'mines_remaining': 3},
  # {'position': (600, 400), 'angle': 90, 'lives': 3, 'team': 2},
  ],
 map_size=(1000, 800),

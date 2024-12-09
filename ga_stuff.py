@@ -61,7 +61,7 @@ def initial_population():
     return np.array([create_chromosome() for _ in range(2)])
 
 ga_instance = pygad.GA(
-    num_generations=1,
+    num_generations=10,
     num_parents_mating=2,
     fitness_func=fitness,
     initial_population=initial_population(),
