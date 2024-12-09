@@ -60,13 +60,6 @@ def initial_population():
     """
     return np.array([create_chromosome() for _ in range(2)])
 
-
-
-
-
-
-
-
 # def crossover(parents, offspring_size, ga):
 #     parent1 = parents[0].tolist()
 #     parent2 = parents[1].tolist()
@@ -110,6 +103,9 @@ def crossover(parents, offspring_size, ga_instance):
     return offspring
 
 def mutate(chromosome, ga):
+    offspring = np.empty(chromosome.shape)
+    # chromosome = chromosome.tolist()
+    chromosome = chromosome.tolist()[0]
     mutation_rate = 0.1
     for i in range(len(chromosome)):
         if random() < mutation_rate:
@@ -126,8 +122,8 @@ def mutate(chromosome, ga):
     chromosome[3:8] = sorted(chromosome[3:8])  # speed
     chromosome[8:10] = sorted(chromosome[8:10])  # bullet_time
     chromosome[10:] = sorted(chromosome[10:])  # thrust
-
-    return chromosome
+    offspring[0] = np.array(chromosome)
+    return offspring
 
 ga_instance = pygad.GA(
     num_generations=1,
