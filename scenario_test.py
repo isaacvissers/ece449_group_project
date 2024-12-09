@@ -5,10 +5,7 @@ import time
 from kesslergame import Scenario, KesslerGame, GraphicsType, TrainerEnvironment
 
 from my_controler_ga import MyControllerGA
-from my_new_controller import MyNewController
 from test_controller import TestController
-from scott_dick_controller import ScottDickController
-from my_controller import MyController
 from graphics_both import GraphicsBoth
 my_test_scenario = Scenario(name='Test Scenario',
  num_asteroids=5,
