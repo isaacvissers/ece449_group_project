@@ -5,7 +5,6 @@ from kesslergame import Scenario, KesslerGame, GraphicsType, TrainerEnvironment
 import numpy as np
 import pygad
 from my_controler_ga import MyControllerGA
-from my_new_controller import MyNewController
 from test_controller import TestController
 from scott_dick_controller import ScottDickController
 # from my_controller_ga import MyControllerGA
@@ -58,7 +57,7 @@ def initial_population():
     """
     Creates the initial population using the custom chromosome creation method.
     """
-    return np.array([create_chromosome() for _ in range(2)])
+    return np.array([create_chromosome() for _ in range(8)])
 
 # def crossover(parents, offspring_size, ga):
 #     parent1 = parents[0].tolist()
@@ -134,7 +133,7 @@ def mutate(chromosome, ga):
     return offspring
 
 ga_instance = pygad.GA(
-    num_generations=1,
+    num_generations=2,
     num_parents_mating=2,
     fitness_func=fitness,
     initial_population=initial_population(),
