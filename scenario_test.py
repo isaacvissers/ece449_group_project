@@ -4,6 +4,7 @@
 import time
 from kesslergame import Scenario, KesslerGame, GraphicsType, TrainerEnvironment
 
+from my_controler_ga import MyControllerGA
 from my_new_controller import MyNewController
 from test_controller import TestController
 from scott_dick_controller import ScottDickController
@@ -26,7 +27,7 @@ game_settings = {'perf_tracker': True,
 game = KesslerGame(settings=game_settings) # Use this to visualize the game scenario
 # game = TrainerEnvironment(settings=game_settings) # Use this for max-speed, no-graphics simulation
 pre = time.perf_counter()
-score, perf_data = game.run(scenario=my_test_scenario, controllers = [MyController(), ])
+score, perf_data = game.run(scenario=my_test_scenario, controllers = [MyControllerGA(), ])
 print('Scenario eval time: '+str(time.perf_counter()-pre))
 print(score.stop_reason)
 print('Asteroids hit: ' + str([team.asteroids_hit for team in score.teams]))

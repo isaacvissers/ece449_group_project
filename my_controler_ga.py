@@ -19,7 +19,7 @@ class MyControllerGA(KesslerController):
          if chromosome is None:
              try:
                  with open("best_results", "r") as file:
-                     chromosome = json.load(file)
+                     chromosome = json.load(file)["solution"]
              # Load from file here, otherwise use default values
              except:
                 chromosome = [400, 300, 90]

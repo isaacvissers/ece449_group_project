@@ -49,16 +49,19 @@ def fitness(ga, solution, index):
     print('Accuracy: ' + str([team.accuracy for team in score.teams]))
     print('Mean eval time: ' + str([team.mean_eval_time for team in score.teams]))
     print('Evaluated frames: ' + str([controller.eval_frames for controller in score.final_controllers]))
-    return [team.asteroids_hit for team in score.teams][0]
+    asteroids = [team.asteroids_hit for team in score.teams][0]
+    if asteroids == 200:
+        asteroids += [team.accuracy for team in score.teams]
+    return asteroids
 
 def initial_population():
     """
     Creates the initial population using the custom chromosome creation method.
     """
-    return np.array([create_chromosome() for _ in range(10)])
+    return np.array([create_chromosome() for _ in range(2)])
 
 ga_instance = pygad.GA(
-    num_generations=5,
+    num_generations=1,
     num_parents_mating=2,
     fitness_func=fitness,
     initial_population=initial_population(),
@@ -68,7 +71,6 @@ ga_instance = pygad.GA(
     crossover_type="single_point",
     mutation_type="random",
     mutation_percent_genes=20,
-    parallel_processing=['thread', 5]
 )
 
 ga_instance.run()
@@ -77,7 +79,18 @@ ga_instance.run()
 best_solution, best_solution_fitness, _ = ga_instance.best_solution()
 print(f"Best solution: {best_solution}")
 print(f"Fitness of the best solution: {best_solution_fitness}")
-with open("best_results", "w") as file:
-    json.dump(best_solution, file)
+try:
+    with open("best_results", "r") as file:
+        best_prev_fitness = json.load(file)["fitness"]
+# Load from file here, otherwise use default values
+except:
+    best_prev_fitness = 0
+if best_prev_fitness < best_solution_fitness:
+    data = {
+        "fitness": float(best_solution_fitness),
+        "solution": best_solution.tolist()
+    }
+    with open("best_results", "w") as file:
+        json.dump(data, file)
 # Plot the fitness progress
 ga_instance.plot_fitness()
