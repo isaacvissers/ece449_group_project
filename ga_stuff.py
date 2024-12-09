@@ -107,16 +107,24 @@ def mutate(chromosome, ga):
     # chromosome = chromosome.tolist()
     chromosome = chromosome.tolist()[0]
     mutation_rate = 0.1
+    # TODO make sure all genes stay in range
     for i in range(len(chromosome)):
         if random() < mutation_rate:
-            if i < 3:  # Non-sorted genes (pos_x, pos_y, heading)
-                chromosome[i] += randint(-10, 10)
+            if i == 0:
+                chromosome[i] = randint(250, 450)
+            elif i == 1:
+                chromosome[i] = randint(200, 350)
+            elif i == 2:
+                chromosome[i] = randint(45, 90)
             elif 3 <= i < 8:  # Sorted `speed`
-                chromosome[i] += randint(-20, 20)
+                chromosome[i] = randint(0, 220)
+                chromosome[3:8] = sorted(chromosome[3:8])
             elif 8 <= i < 10:  # Sorted `bullet_time`
-                chromosome[i] += random() * 0.02
+                chromosome[i] = random() * 0.1
+                chromosome[8:10] = sorted(chromosome[8:10])
             elif i >= 10:  # Sorted `thrust`
-                chromosome[i] += randint(-30, 30)
+                chromosome[i] = randint(0, 260)
+                chromosome[10:] = sorted(chromosome[10:])
 
     # Re-sort sorted sections
     chromosome[3:8] = sorted(chromosome[3:8])  # speed
