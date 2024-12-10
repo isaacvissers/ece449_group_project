@@ -35,6 +35,9 @@ class MyControllerGA(KesslerController):
          ship_position_y = ctrl.Antecedent(np.arange(-400, 400, 1), 'ship_pos_y')
          ship_heading = ctrl.Antecedent(np.arange(0, 360, 1), 'ship_heading')
          ship_speed = ctrl.Antecedent(np.arange(-240, 240, 1), 'ship_speed')
+         ship_mine = ctrl.Consequent(np.arange(-1, 1, 0.1), 'ship_mine')
+         asteroid_dist = ctrl.Antecedent(np.arange(0, 1000, 10), 'asteroid_dist')
+         edge_proximity = ctrl.Antecedent(np.arange(0, 500, 10), 'edge_proximity')
 
         # We only care if the position is near the edges
          ship_position_x['NL'] = fuzz.trimf(ship_position_x.universe, [-500, -500, -chromosome[0]])
@@ -99,6 +102,19 @@ class MyControllerGA(KesslerController):
          ship_fire['N'] = fuzz.trimf(ship_fire.universe, [-1,-1,0.0])
          ship_fire['Y'] = fuzz.trimf(ship_fire.universe, [0.0,1,1])
 
+         # Fuzzy sets for `asteroid_dist`
+         asteroid_dist['close'] = fuzz.zmf(asteroid_dist.universe, 0, 200)
+         asteroid_dist['medium'] = fuzz.trimf(asteroid_dist.universe, [100, 300, 500])
+         asteroid_dist['far'] = fuzz.smf(asteroid_dist.universe, 400, 800)
+
+         # Fuzzy sets for `edge_proximity`
+         edge_proximity['near'] = fuzz.zmf(edge_proximity.universe, 0, 100)
+         edge_proximity['medium'] = fuzz.trimf(edge_proximity.universe, [50, 150, 250])
+         edge_proximity['far'] = fuzz.smf(edge_proximity.universe, 200, 500)
+
+         ship_mine['no'] = fuzz.trimf(ship_mine.universe, [-1, -1, 0])
+         ship_mine['yes'] = fuzz.trimf(ship_mine.universe, [0, 1, 1])
+
          #Declare each fuzzy rule
          # rule1 = ctrl.Rule(bullet_time['L'] & theta_delta['NL'], (ship_turn['NL'], ship_fire['N'], ship_thrust['PS']))
          # rule2 = ctrl.Rule(bullet_time['L'] & theta_delta['NM'], (ship_turn['NM'], ship_fire['N'], ship_thrust['PM']))
@@ -154,6 +170,16 @@ class MyControllerGA(KesslerController):
          rule28 = ctrl.Rule(ship_position_y['PL'] & ship_heading['S'], (ship_thrust['PL']))
          rule29 = ctrl.Rule(ship_position_y['NL'] & ship_heading['N'], (ship_thrust['PL']))
 
+         rule_mine1 = ctrl.Rule(asteroid_dist['close'] & edge_proximity['far'] & ship_speed['NS'], ship_mine['yes'])
+         rule_mine2 = ctrl.Rule(asteroid_dist['medium'] & edge_proximity['far'] & ship_speed['NS'], ship_mine['yes'])
+         rule_mine3 = ctrl.Rule(edge_proximity['near'] | ship_speed['PL'], ship_mine['no'])
+         rule_mine4 = ctrl.Rule(asteroid_dist['close'] & edge_proximity['near'] & ship_speed['PS'], ship_mine['yes'])
+         rule_mine5 = ctrl.Rule(asteroid_dist['close'] & edge_proximity['far'] & ship_speed['PL'], ship_mine['no'])
+         rule_mine6 = ctrl.Rule(asteroid_dist['medium'] & edge_proximity['near'] & ship_speed['NS'], ship_mine['no'])
+         rule_mine7 = ctrl.Rule(asteroid_dist['far'] & edge_proximity['far'] & (ship_speed['NS'] | ship_speed['NL']), ship_mine['no'])
+         rule_mine8 = ctrl.Rule(asteroid_dist['medium'] & edge_proximity['far'] & ship_speed['NL'], ship_mine['yes'])
+         rule_mine9 = ctrl.Rule(asteroid_dist['close'] & edge_proximity['far'] & ship_speed['NS'], ship_mine['yes'])
+
          #DEBUG
          #bullet_time.view()
          #theta_delta.view()
@@ -196,6 +222,15 @@ class MyControllerGA(KesslerController):
          self.targeting_control.addrule(rule27)
          self.targeting_control.addrule(rule28)
          self.targeting_control.addrule(rule29)
+         self.targeting_control.addrule(rule_mine1)
+         self.targeting_control.addrule(rule_mine2)
+         self.targeting_control.addrule(rule_mine3)
+         self.targeting_control.addrule(rule_mine4)
+         self.targeting_control.addrule(rule_mine5)
+         self.targeting_control.addrule(rule_mine6)
+         self.targeting_control.addrule(rule_mine7)
+         self.targeting_control.addrule(rule_mine8)
+         self.targeting_control.addrule(rule_mine9)
 
 
      def actions(self, ship_state: Dict, game_state: Dict) -> Tuple[float, float, bool]:
@@ -221,7 +256,10 @@ class MyControllerGA(KesslerController):
          ship_pos_x = ship_state["position"][0] # See src/kesslergame/ship.py in the KesslerGame Github
          ship_pos_y = ship_state["position"][1]
          ship_velocity = ship_state["velocity"]
+         ship_heading = ship_state["heading"]
          closest_asteroid = None
+         
+         ship_speed = math.sqrt(ship_velocity[0]**2 + ship_velocity[1]**2)
 
          for a in game_state["asteroids"]:
             # Loop through all asteroids, find minimum Eudlidean distance
@@ -290,6 +328,34 @@ class MyControllerGA(KesslerController):
          # Wrap all angles to (-pi, pi)
          shooting_theta = (shooting_theta + math.pi) % (2 * math.pi) - math.pi
 
+         # Find the closest asteroid
+         closest_asteroid = None
+         closest_distance = float('inf')
+
+         for asteroid in game_state["asteroids"]:
+            asteroid_pos_x = asteroid["position"][0]
+            asteroid_pos_y = asteroid["position"][1]
+
+            distance = math.sqrt((ship_pos_x - asteroid_pos_x)**2 + (ship_pos_y - asteroid_pos_y)**2)
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_asteroid = asteroid
+
+         # asteroid_dist is the distance to the closest asteroid
+         asteroid_dist = closest_distance
+
+         # Check if an asteroid was found
+         if closest_asteroid is None:
+            asteroid_dist = 1000  # No asteroid, use a high default value
+         playfield_x_bounds = (0, 500)
+         playfield_y_bounds = (0, 500)
+
+         edge_proximity = min(
+            abs(ship_pos_x - playfield_x_bounds[0]),
+            abs(ship_pos_x - playfield_x_bounds[1]),
+            abs(ship_pos_y - playfield_y_bounds[0]),
+            abs(ship_pos_y - playfield_y_bounds[1])
+    )
          # Pass the inputs to the rulebase and fire it
          shooting = ctrl.ControlSystemSimulation(self.targeting_control,flush_after_run=1)
 
@@ -298,7 +364,9 @@ class MyControllerGA(KesslerController):
          shooting.input['ship_heading'] = ship_state['heading']
          shooting.input['ship_pos_x'] = ship_pos_x
          shooting.input['ship_pos_y'] = ship_pos_y
-
+         shooting.input['asteroid_dist'] = asteroid_dist
+         shooting.input['edge_proximity'] = edge_proximity
+         shooting.input['ship_speed'] = ship_speed
          shooting.compute()
 
          # Get the defuzzified outputs
@@ -319,7 +387,11 @@ class MyControllerGA(KesslerController):
          #DEBUG
          # print(thrust, bullet_t, shooting_theta, turn_rate, fire)
 
-         return thrust, turn_rate, fire, drop_mine
+
+         mine_output = shooting.output.get('ship_mine', 0)
+         deploy_mine = mine_output > 0  # Convert fuzzy output to boolean decision
+
+         return thrust, turn_rate, fire, deploy_mine
      @property
      def name(self) -> str:
         return "My Fuzzy Controller"
