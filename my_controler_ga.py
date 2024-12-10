@@ -16,13 +16,13 @@ import numpy as np
 import matplotlib as plt
 class MyControllerGA(KesslerController):
      def __init__(self, chromosome=None):
+         # Try to get current best results, otherwise use a default value
          if chromosome is None:
              try:
                  with open("best_results", "r") as file:
                      chromosome = json.load(file)["solution"]
-             # Load from file here, otherwise use default values
              except:
-                chromosome = [400, 300, 90]
+                chromosome = [384.0, 281.0, 87.0, 19.0, 34.0, 91.0, 172.0, 208.0, 0.027338135640575356, 0.09615322322089254, 75.0, 90.0, 130.0, 132.0, 150.0, 159.0]
          self.eval_frames = 0 #What is this?
          # self.targeting_control is the targeting rulebase, which is static in this controller.
          # Declare variables
@@ -389,6 +389,7 @@ class MyControllerGA(KesslerController):
 
 
          mine_output = shooting.output.get('ship_mine', 0)
+         print(mine_output)
          deploy_mine = mine_output > 0  # Convert fuzzy output to boolean decision
 
          return thrust, turn_rate, fire, deploy_mine
