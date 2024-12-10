@@ -56,17 +56,17 @@ class MyControllerGA(KesslerController):
          ship_heading['E'] = np.fmax(ship_heading['E1'].mf, ship_heading['E2'].mf)
          ship_heading['W'] = fuzz.trimf(ship_turn.universe, [180-h,180,180+h])
          # TODO keep doing stuff here
-         ship_speed['NL'] = fuzz.trimf(ship_speed.universe, [-240, -240, -160])
-         ship_speed['NM'] = fuzz.trimf(ship_speed.universe, [-240, -160, -80])
-         ship_speed['NS'] = fuzz.trimf(ship_speed.universe, [-160, -80, 0])
+         ship_speed['NL'] = fuzz.trimf(ship_speed.universe, [-240, -240, -chromosome[7]])
+         ship_speed['NM'] = fuzz.trimf(ship_speed.universe, [-240, -chromosome[6], -chromosome[4]])
+         ship_speed['NS'] = fuzz.trimf(ship_speed.universe, [-chromosome[5], -chromosome[3], 0])
          # ship_speed['Z'] = fuzz.trimf(ship_speed.universe, [-60,0,60])
-         ship_speed['PS'] = fuzz.trimf(ship_speed.universe, [-0, 80, 160])
-         ship_speed['PM'] = fuzz.trimf(ship_speed.universe, [80, 160, 240])
-         ship_speed['PL'] = fuzz.trimf(ship_speed.universe, [160, 240, 240])
+         ship_speed['PS'] = fuzz.trimf(ship_speed.universe, [0, chromosome[3], chromosome[5]])
+         ship_speed['PM'] = fuzz.trimf(ship_speed.universe, [chromosome[4], chromosome[6], 240])
+         ship_speed['PL'] = fuzz.trimf(ship_speed.universe, [chromosome[7], 240, 240])
 
          #Declare fuzzy sets for bullet_time (how long it takes for the bullet to reach the intercept point)
-         bullet_time['S'] = fuzz.trimf(bullet_time.universe,[0,0,0.025])
-         bullet_time['M'] = fuzz.trimf(bullet_time.universe, [0,0.025,0.1])
+         bullet_time['S'] = fuzz.trimf(bullet_time.universe,[0,0,chromosome[8]])
+         bullet_time['M'] = fuzz.trimf(bullet_time.universe, [0,chromosome[9],0.1])
          bullet_time['L'] = fuzz.smf(bullet_time.universe,0.0,0.1)
 
          # Declare fuzzy sets for theta_delta (degrees of turn needed to reach the calculated firing angle)
@@ -89,13 +89,13 @@ class MyControllerGA(KesslerController):
          ship_turn['PM'] = fuzz.trimf(ship_turn.universe, [60,120,180])
          ship_turn['PL'] = fuzz.trimf(ship_turn.universe, [120,180,180])
 
-         ship_thrust['NL'] = fuzz.trimf(ship_thrust.universe, [-480, -480, -320])
-         ship_thrust['NM'] = fuzz.trimf(ship_thrust.universe, [-480, -320, -160])
-         ship_thrust['NS'] = fuzz.trimf(ship_thrust.universe, [-320, -160, 0])
-         ship_thrust['Z'] = fuzz.trimf(ship_thrust.universe, [-60,0,60])
-         ship_thrust['PS'] = fuzz.trimf(ship_thrust.universe, [-0, 160, 320])
-         ship_thrust['PM'] = fuzz.trimf(ship_thrust.universe, [160, 320, 480])
-         ship_thrust['PL'] = fuzz.trimf(ship_thrust.universe, [320, 480, 480])
+         ship_thrust['NL'] = fuzz.trimf(ship_thrust.universe, [-480, -480, -chromosome[15]])
+         ship_thrust['NM'] = fuzz.trimf(ship_thrust.universe, [-480, -chromosome[14], -chromosome[12]])
+         ship_thrust['NS'] = fuzz.trimf(ship_thrust.universe, [-chromosome[13], -chromosome[11], 0])
+         ship_thrust['Z'] = fuzz.trimf(ship_thrust.universe, [-chromosome[10],0,chromosome[10]])
+         ship_thrust['PS'] = fuzz.trimf(ship_thrust.universe, [-0, chromosome[11], chromosome[13]])
+         ship_thrust['PM'] = fuzz.trimf(ship_thrust.universe, [chromosome[12], chromosome[14], 480])
+         ship_thrust['PL'] = fuzz.trimf(ship_thrust.universe, [chromosome[15], 480, 480])
 
          #Declare singleton fuzzy sets for the ship_fire consequent; -1 -> don't fire, +1 -> fire; this will be thresholded
          # and returned as the boolean 'fire'
